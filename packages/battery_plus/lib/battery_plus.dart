@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:battery_plus_platform_interface/battery_plus_platform_interface.dart';
+import 'package:battery_plus_linux/battery_plus_linux.dart';
 
 // Export enums from the platform_interface so plugin users can use them directly.
 export 'package:battery_plus_platform_interface/battery_plus_platform_interface.dart'
@@ -29,7 +32,26 @@ class Battery {
 
   static Battery _singleton;
 
-  static BatteryPlatform get _platform => BatteryPlatform.instance;
+  /// Disables the platform override in order to use a manually registered
+  /// [BatteryPlatform] for testing purposes.
+  /// See https://github.com/flutter/flutter/issues/52267 for more details.
+  @visibleForTesting
+  static set disableBatteryPlatformOverride(bool override) {
+    _disablePlatformOverride = override;
+  }
+
+  static bool _disablePlatformOverride = false;
+  static BatteryPlatform __platform;
+
+  // This is to manually endorse the Linux plugin until automatic registration
+  // of dart plugins is implemented.
+  // See https://github.com/flutter/flutter/issues/52267 for more details.
+  static BatteryPlatform get _platform {
+    __platform ??= !kIsWeb && Platform.isLinux && !_disablePlatformOverride
+        ? BatteryLinux()
+        : BatteryPlatform.instance;
+    return __platform;
+  }
 
   /// get battery level
   Future<int> get batteryLevel {
