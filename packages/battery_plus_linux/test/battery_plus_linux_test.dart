@@ -24,10 +24,12 @@ void main() {
       when(device.getState()).thenAnswer((_) {
         return Future.value(UPowerBatteryState.charging);
       });
+      when(device.subscribeStateChanged()).thenAnswer((_) {
+        return Stream.value(UPowerBatteryState.fullyCharged);
+      });
       return device;
     };
-    battery.onBatteryStateChanged.listen(expectAsync1((state) {
-      expect(state, equals(BatteryState.charging));
-    }));
+    expect(battery.onBatteryStateChanged,
+        emitsInOrder([BatteryState.charging, BatteryState.full]));
   });
 }

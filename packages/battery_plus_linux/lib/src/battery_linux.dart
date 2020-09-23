@@ -56,7 +56,7 @@ class BatteryLinux extends BatteryPlatform {
     _stateDevice ??= createDevice();
     // ### TODO: is an initial state needed?
     _stateDevice.getState().then((value) => _addState(value));
-    _stateDevice.subscribeStateChanged((value) => _addState(value));
+    _stateDevice.subscribeStateChanged().listen((value) => _addState(value));
   }
 
   void _stopListenState() {

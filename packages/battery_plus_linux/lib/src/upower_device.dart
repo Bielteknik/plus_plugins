@@ -47,13 +47,11 @@ class UPowerDevice extends DBusRemoteObject {
         .then((value) => value ?? UPowerBatteryState.unknown);
   }
 
-  Future<DBusSignalSubscription> subscribeStateChanged(
-      UPowerBatteryStateCallback callback) {
-    return subscribePropertiesChanged((_, properties, __) {
-      final state = properties['State'];
-      if (state != null) {
-        callback((state as DBusUint32).value.toBatteryState());
-      }
-    });
+  Stream<UPowerBatteryState> subscribeStateChanged() {
+    return subscribePropertiesChanged()
+        .where((event) => event.changedProperties.containsKey('State'))
+        .map((event) => (event.changedProperties['State'] as DBusUint32)
+            .value
+            .toBatteryState());
   }
 }
